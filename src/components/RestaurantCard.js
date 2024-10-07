@@ -5,12 +5,11 @@ const RestaurantCard = (props) => {
   const { cloudinaryImageId, name, cuisines, avgRating, costForTwo, sla, veg } =
     resData.info;
 
-  console.log(resData);
   return (
     <div className="m-3 w-44 bg-gray-100 hover:bg-gray-200">
-      <label className="absolute cursor-pointer">
+      {/* <label className="absolute cursor-pointer">
         {veg === true ? "🟩 " : "  "}
-      </label>
+      </label> */}
       <img
         className="w-44 p-2 mx-0 h-36 object-cover"
         src={CDN_URL + cloudinaryImageId}

@@ -2,7 +2,7 @@ import RestaurantCard from "./RestaurantCard";
 import { useContext, useEffect, useState } from "react";
 import Shimmer from "./Shimmer";
 import { Link } from "react-router-dom";
-import { RES_DATA_API } from "../utils/constants";
+import { RES_DATA_API, SEARCH_SUGGESTION_API } from "../utils/constants";
 import Collection from "./Collection";
 import useOnlineStatus from "../utils/useOnlineStatus";
 import userContext from "../utils/userContext";
@@ -15,6 +15,10 @@ export const Body = () => {
 
   const [searchText, setSearchText] = useState("");
 
+  const [suggestions, setSuggestions] = useState([]);
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   const { loggedInUser, setUserName } = useContext(userContext);
 
   const user = useSelector((store) => store.user.user);
@@ -23,12 +27,26 @@ export const Body = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => getSearchSuggestions(), 200);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchText]);
+
+  const getSearchSuggestions = async () => {
+    const data = await fetch(SEARCH_SUGGESTION_API + searchText);
+    const json = await data.json();
+
+    setSuggestions(json[1]);
+  };
+
   const fetchData = async () => {
     const data = await fetch(RES_DATA_API);
 
     const json = await data.json();
 
-    //Optional Chaining
     setListOfRestaurant(
       json?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants
     );
@@ -43,7 +61,7 @@ export const Body = () => {
   if (OnlineStatus === false) {
     return (
       <h1 className="text-center font-bold text-2xl">
-        Look's Like You Are Offline,Please Check Your Internet Connection.
+        Look's Like You Are Offline, Please Check Your Internet Connection.
       </h1>
     );
   }
@@ -63,6 +81,13 @@ export const Body = () => {
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => {
+              // Delay hiding suggestions to allow the click to register
+              setTimeout(() => {
+                setShowSuggestions(false);
+              }, 200);
             }}
           />
           <button
@@ -96,10 +121,24 @@ export const Body = () => {
           </div>
         </div>
       </div>
-      {/* <Collection /> */}
-      {/* <h1 className="font-bold text-2xl text-center my-2">
-        -- Top Restaurants --
-      </h1> */}
+      <div className="flex items-center ml-80  fixed bg-white w-56 border rounded-md  border-t-0 ">
+        <ul className="">
+          {showSuggestions &&
+            suggestions.map((s) => (
+              <li
+                className="px-1 m-1 hover:bg-slate-100 cursor-pointer"
+                key={s}
+                onMouseDown={() => {
+                  // onMouseDown to capture the click before input loses focus
+                  setSearchText(s);
+                  setShowSuggestions(false);
+                }}
+              >
+                🔍 {s}
+              </li>
+            ))}
+        </ul>
+      </div>
       <div className="flex flex-wrap mx-5 my-3">
         {filterListOfRestaurant?.map((res) => (
           <Link key={res.info.id} to={"/restaurant/" + res.info.id}>

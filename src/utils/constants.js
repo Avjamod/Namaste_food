@@ -17,3 +17,6 @@ export const COLLECTION_API =
 
 export const F =
   "https://www.swiggy.com/mapi/homepage/getCards?lat=22.5948667&lng=72.8458451";
+
+export const SEARCH_SUGGESTION_API =
+  "http://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=";
